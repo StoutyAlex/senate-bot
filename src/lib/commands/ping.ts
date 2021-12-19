@@ -10,6 +10,6 @@ export class Ping extends BaseCommand {
 
     public async execute(message: Message, args: string[]) {
         console.log('execute ping', message.content)
-        return message.channel.send('Pong! Hello')
+        return message.channel.send('Pong!')
     }
 }

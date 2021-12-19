@@ -1,5 +1,4 @@
 import { Message } from "discord.js"
-import { logger } from "senate-bot-common"
 import { commandHandler } from "../../../src/lib/command-handler"
 import { BotConfig } from "../../../src/lib/configuration/config-helper"
 import { MessageCreate } from "../../../src/lib/events/message-create"
@@ -8,7 +7,6 @@ import { Stage } from "../../../src/types"
 import { fixtureMessage } from "../../fixtures/message-fixture"
 
 jest.mock('../../../src/lib/command-handler')
-jest.mock('senate-bot-common')
 
 const mockCommandHandler = commandHandler as jest.Mock
 
@@ -56,14 +54,5 @@ describe('Message Create', () => {
         await messageCreate.execute([botCommandMessage])
 
         expect(mockCommandHandler).not.toHaveBeenCalled()
-    })
-
-    test('Logs message when message recieved', async () => {
-        const message = fixtureMessage()
-        const messageCreate = new MessageCreate(mockBot)
-
-        await messageCreate.execute([message])
-
-        expect(logger.info).toHaveBeenCalledWith('Message recieved', { content: message.content })
     })
 })

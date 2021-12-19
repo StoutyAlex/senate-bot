@@ -1,5 +1,5 @@
 import { secrets } from "../src/lib/configuration"
-import { run } from "../src/main"
+import { run } from "../src/index"
 import { SenateBot } from "../src/structures/senate-bot"
 import faker from 'faker'
 

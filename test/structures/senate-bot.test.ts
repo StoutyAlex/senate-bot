@@ -3,7 +3,6 @@ import { baseConfig } from "../../src/lib/configuration/config-helper";
 import { SenateBot } from "../../src/structures/senate-bot"
 
 jest.mock('discord.js')
-jest.mock('senate-bot-common')
 
 const loginMock = (Client.prototype.login as jest.Mock)
 
