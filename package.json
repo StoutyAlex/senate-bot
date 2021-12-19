@@ -1,0 +1,41 @@
+{
+  "name": "senate-bot",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development env-cmd -f .env.dev tsnd --transpile-only --respawn --no-notify --ignore-watch node_modules ./src/index.ts",
+    "start": "cross-env NODE_ENV=production env-cmd -f .env node ./dist/index.js",
+    "watch": "nodemon src/index.ts",
+    "build": "tsc",
+    "test": "jest --maxWorkers=4",
+    "deploy": "yarn && yarn build && yarn start"
+  },
+  "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "aws-sdk": "^2.1046.0",
+    "cross-env": "^7.0.3",
+    "discord.js": "13.1.0",
+    "dotenv": "^10.0.0",
+    "env-cmd": "^10.1.0"
+  },
+  "devDependencies": {
+    "@aws-cdk/aws-dynamodb": "^1.136.0",
+    "@aws-cdk/aws-ec2": "^1.136.0",
+    "@aws-cdk/aws-ecr": "^1.136.0",
+    "@aws-cdk/aws-ecr-assets": "^1.136.0",
+    "@aws-cdk/aws-ecs": "^1.136.0",
+    "@aws-cdk/aws-ecs-patterns": "^1.136.0",
+    "@aws-cdk/aws-secretsmanager": "^1.136.0",
+    "@aws-cdk/core": "^1.136.0",
+    "@types/faker": "^5.5.9",
+    "@types/node": "^16.4.10",
+    "faker": "^5.5.3",
+    "jest": "^27.3.1",
+    "nodemon": "^2.0.15",
+    "ts-jest": "^27.0.7",
+    "ts-node": "^10.4.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5"
+  }
+}

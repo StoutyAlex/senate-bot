@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  bot:
+    restart: always
+    container_name: senate-bot
+    volumes:
+      - ./src:/var/bot/src
+      - ./nodemon.json:/var/bot/nodemon.json
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    command: npm run watch
