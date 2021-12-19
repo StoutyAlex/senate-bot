@@ -1,13 +1,10 @@
 import { SecretsManager } from "aws-sdk"
 import faker from 'faker'
-import { logger } from "senate-bot-common"
 import { BotConfig } from "../../../src/lib/configuration/config-helper"
 import { getToken } from "../../../src/lib/configuration/secrets"
 import { Stage } from "../../../src/types"
 
-
 jest.mock('aws-sdk')
-jest.mock('senate-bot-common')
 
 const mockGetSecretValue = jest.fn()
 SecretsManager.prototype.getSecretValue = mockGetSecretValue
@@ -43,7 +40,6 @@ describe('Secrets', () => {
             mockGetSecretValue.mockImplementation(() => new Error() )
 
             await expect(getToken(config)).rejects.toThrow('Token was not found in secrets')
-            expect(logger.error).toHaveBeenCalledWith('Unable to fetch token', { secretId: config.botTokenId })
         })
 
         test('Returns a local environment variable when on local', async () => {

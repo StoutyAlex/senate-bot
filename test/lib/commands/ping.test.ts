@@ -1,7 +1,7 @@
 import { commandHandler } from "../../../src/lib/command-handler"
 import { BotConfig } from "../../../src/lib/configuration/config-helper"
 import { SenateBot } from "../../../src/structures/senate-bot"
-import { Stage } from "../../../src/types/index.d."
+import { Stage } from "../../../src/types/index"
 import { FixtureCommand } from "../../fixtures/command-fixture"
 import { Message } from 'discord.js'
 import { fixtureCommandMessage } from "../../fixtures/message-fixture"
