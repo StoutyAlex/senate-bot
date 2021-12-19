@@ -11,7 +11,7 @@ const config = getBotConfig();
 const client = new SenateBot({ config, commands: COMMANDS, events: EVENTS });
 
 export const run = async () => {
-    const token = await secrets.getToken(config)
+    const token = await secrets.getToken()
     await client.start(token)
 }
 

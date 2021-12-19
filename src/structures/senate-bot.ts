@@ -1,4 +1,5 @@
-import { Client, Intents } from "discord.js";
+import { Client, Intents, TextChannel } from "discord.js";
+import { getGeneralChannel } from "../helpers/channel";
 import { BotConfig } from "../lib/configuration/config-helper";
 import { Events } from "../types";
 import { BaseCommand } from "./command";
@@ -13,6 +14,7 @@ export class SenateBot extends Client {
     public readonly config: BotConfig
     public commands: BaseCommand[]
     private readonly events: Events
+    public mainChannel: TextChannel
 
     constructor(props: SenateBotProps) {
         super({
@@ -36,8 +38,9 @@ export class SenateBot extends Client {
     }
 
     async start(token: string) {
-        this.on('ready', () => {
+        this.on('ready', async () => {
             console.log('Bot is ready')
+            this.mainChannel = getGeneralChannel(this)
         })
 
         Object.entries(this.events).forEach(([name, handler]) => {
@@ -53,6 +56,7 @@ export class SenateBot extends Client {
         })
 
         await this.login(token)
+
         return this;
     }
 }

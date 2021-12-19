@@ -15,6 +15,7 @@ export interface CommandMeta {
 
 export type Events = {[property in keyof Partial<ClientEvents>]: typeof BaseEvent}
 
+
 export abstract class Executeable {
     constructor(public client: SenateBot) {
         this.client = client
