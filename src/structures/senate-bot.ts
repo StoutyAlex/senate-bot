@@ -49,12 +49,6 @@ export class SenateBot extends Client {
             console.log('Added event', { eventName: name })
         })
 
-        this.on('message', (message) => {
-            if (message.content.startsWith(this.config.prefix + ' ')) {
-                
-            }
-        })
-
         await this.login(token)
 
         return this;

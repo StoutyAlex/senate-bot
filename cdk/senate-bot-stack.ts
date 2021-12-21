@@ -20,13 +20,25 @@ export class SenateBot extends cdk.Stack {
         
         const secretBotToken = secretManager.Secret.fromSecretCompleteArn(this, stackName('bot-token'), props.botTokenArn)
 
-        const messageTable = new dynamo.Table(this, stackName('message-table'), {
-            tableName: constructName('message-table'),
+        const memberTable = new dynamo.Table(this, stackName('member-table'), {
+            tableName: constructName('member-table'),
             partitionKey: {
-                name: 'messageId',
+                name: 'memberId',
                 type: dynamo.AttributeType.STRING
             },
+            sortKey: {
+                name: 'guildId',
+                type: dynamo.AttributeType.STRING,
+            },
             removalPolicy: RemovalPolicy.RETAIN
+        })
+
+        memberTable.addGlobalSecondaryIndex({
+            indexName: 'guildIdIndex',
+            partitionKey: {
+                name: 'guildId',
+                type: dynamo.AttributeType.STRING
+            }
         })
 
         const discordBot = new SenateECSContainer(this, stackName('ecs-construct'), {
@@ -35,14 +47,14 @@ export class SenateBot extends cdk.Stack {
             botToken: secretBotToken.secretValue.toString(),
             stage: props.stage,
             environment: {
-                MESSAGE_TABLE_NAME: messageTable.tableName
+                MEMBER_TABLE_NAME: memberTable.tableName
             }
         })
         
-        messageTable.grantFullAccess(discordBot.role)
+        memberTable.grantFullAccess(discordBot.role)
 
-        new CfnOutput(this, 'MessageTableName', {
-            value: messageTable.tableName
+        new CfnOutput(this, 'MemberTableName', {
+            value: memberTable.tableName
         })
     }
 }
