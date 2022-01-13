@@ -1,4 +1,5 @@
 import * as cdk from '@aws-cdk/core'
+import { SenateMinecraft } from '../cdk/minecraft/minecraft-stack'
 import { SenateBot } from '../cdk/senate-bot-stack'
 
 const app = new cdk.App()
@@ -19,3 +20,8 @@ new SenateBot(app, 'senate-bot', {
   ...appConfig,
   stackName: `SenateBotServer`,
 })
+
+// new SenateMinecraft(app, 'senate-minecraft', {
+//   ...appConfig,
+//   stackName: 'senate-minecraft'
+// })
