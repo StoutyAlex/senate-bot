@@ -1,5 +1,6 @@
 import * as cdk from '@aws-cdk/core'
-import { SenateMinecraftServer } from '../cdk/minecraft-server/senate-mc-server'
+import aws from 'aws-sdk'
+import { SenateMinecraftServer, SenateMinecraftServerProps } from '../cdk/minecraft-server/senate-mc-server'
 import { SenateBot } from '../cdk/senate-bot-stack'
 
 const app = new cdk.App()
@@ -10,17 +11,27 @@ if (!stage || !['dev', 'prod'].includes(stage)) {
 }
 
 const appConfig = app.node.tryGetContext('stackProps')[stage]
+const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as { rconPasswordArn: string }
 
-new SenateBot(app, 'senate-bot-dev', {
-  ...appConfig,
-  stackName: `SenateBotServer-dev`,
-})
+const createStacks = async () => {
+  const secretManager = new aws.SecretsManager({ region: 'eu-west-1' })
+  const rconPassword = await secretManager.getSecretValue({ SecretId: minecraftConfig.rconPasswordArn }).promise()
 
-new SenateBot(app, 'senate-bot', {
-  ...appConfig,
-  stackName: `SenateBotServer`,
-})
+  new SenateBot(app, 'senate-bot-dev', {
+    ...appConfig,
+    stackName: `SenateBotServer-dev`,
+  })
+  
+  new SenateBot(app, 'senate-bot', {
+    ...appConfig,
+    stackName: `SenateBotServer`,
+  })
+  
+  new SenateMinecraftServer(app, 'senate-minecraft', {
+    rconPassword: rconPassword.SecretString!,
+    rconPasswordArn: minecraftConfig.rconPasswordArn,
+    stackName: 'senate-minecraft'
+  })
+}
 
-new SenateMinecraftServer(app, 'senate-minecraft', {
-  stackName: 'senate-minecraft'
-})
+createStacks()

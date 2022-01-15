@@ -18,7 +18,10 @@
     "cross-env": "^7.0.3",
     "discord.js": "13.1.0",
     "dotenv": "^10.0.0",
-    "env-cmd": "^10.1.0"
+    "env-cmd": "^10.1.0",
+    "lodash": "^4.17.21",
+    "minecraft-server-util": "^5.2.8",
+    "properties-reader": "^2.2.0"
   },
   "devDependencies": {
     "@aws-cdk/aws-dynamodb": "^1.139.0",
@@ -27,12 +30,15 @@
     "@aws-cdk/aws-ecr-assets": "^1.139.0",
     "@aws-cdk/aws-ecs": "^1.139.0",
     "@aws-cdk/aws-ecs-patterns": "^1.139.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.139.0",
     "@aws-cdk/aws-s3-assets": "^1.139.0",
     "@aws-cdk/aws-s3-deployment": "^1.139.0",
     "@aws-cdk/aws-secretsmanager": "^1.139.0",
     "@aws-cdk/core": "^1.139.0",
     "@types/faker": "^5.5.9",
+    "@types/lodash": "^4.14.178",
     "@types/node": "^16.4.10",
+    "@types/properties-reader": "^2.1.1",
     "faker": "^5.5.3",
     "jest": "^27.3.1",
     "nodemon": "^2.0.15",

@@ -29,7 +29,8 @@ sudo chown -R minecraft:minecraft /opt/minecraft/server
 
 echo 'eula=true' >> eula.txt
 
-sudo aws s3 cp s3://senate-minecraft-storage/minecraft.service /etc/systemd/system/minecraft.service
+sudo aws s3 cp s3://senate-minecraft-bundle/minecraft.service /etc/systemd/system/minecraft.service
+sudo aws s3 cp s3://senate-minecraft-bundle/server.properties /opt/minecraft/server/server.properties
 
 sudo systemctl daemon-reload
 sudo systemctl enable minecraft

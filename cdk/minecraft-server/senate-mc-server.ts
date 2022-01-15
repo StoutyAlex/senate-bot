@@ -1,15 +1,23 @@
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
-import * as s3 from '@aws-cdk/aws-s3'
-import * as s3Deploy from '@aws-cdk/aws-s3-deployment'
-import * as s3Asset from '@aws-cdk/aws-s3-assets'
 import * as path from 'path'
+import * as events from '@aws-cdk/aws-events'
+import * as targets from '@aws-cdk/aws-events-targets'
+import * as secretsmanager from '@aws-cdk/aws-secretsmanager'
 import { readFileSync } from 'fs';
-import { CloudFormationInit, EbsDeviceVolumeType, InitFile } from '@aws-cdk/aws-ec2';
+import { EbsDeviceVolumeType } from '@aws-cdk/aws-ec2';
+import { SenateMCSecurityGroup } from './mc-server-security-group';
+import { SenateMCBundle } from './mc-server-bundle';
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+
+export interface SenateMinecraftServerProps extends cdk.StackProps {
+    rconPasswordArn: string
+    rconPassword: string
+}
 
 export class SenateMinecraftServer extends cdk.Stack {
-    constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    constructor(scope: cdk.App, id: string, props: SenateMinecraftServerProps) {
         super(scope, id, props)
 
         const buildName = (name: string) => `senate-minecraft-${name}`
@@ -25,50 +33,18 @@ export class SenateMinecraftServer extends cdk.Stack {
             natGateways: 0
         })
 
-        const serverSecurityGroup = new ec2.SecurityGroup(this, 'security-group', {
+        const serverSecurityGroup = new SenateMCSecurityGroup(this, 'security-group', {
             vpc,
-            allowAllOutbound: true
+            allowAllOutbound: true,
+            rconPort: 25575,
+            mcPort: 25565
         })
 
-        const bucket = new s3.Bucket(this, 'minecraft-backups', {
-            bucketName: buildName('storage'),
-            removalPolicy: cdk.RemovalPolicy.RETAIN
+        const bundle = new SenateMCBundle(this, 'bundle', {
+            serverSecurityGroup,
+            rconPassword: props.rconPassword,
+            buildName,
         })
-
-        new s3Deploy.BucketDeployment(this, 'service-deploy', {
-            sources: [s3Deploy.Source.asset(path.join(__dirname))],
-            destinationBucket: bucket,
-        })
-
-        serverSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.tcp(22),
-            'allow SSH access from anywhere'
-        )
-
-        serverSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.tcp(25565),
-            'allow TCP Minecraft access from anywhere'
-        )
-
-        serverSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.udp(25565),
-            'allow UDP Minecraft access from anywhere'
-        )
-
-        serverSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.tcp(80),
-            'allow HTTP traffic from anywhere',
-        )
-    
-        serverSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.tcp(443),
-            'allow HTTPS traffic from anywhere',
-        )
 
         const role = new iam.Role(this, 'server-role', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
@@ -77,7 +53,7 @@ export class SenateMinecraftServer extends cdk.Stack {
             ]
         })
 
-        bucket.grantReadWrite(role)
+        bundle.bucket.grantReadWrite(role)
 
         const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
             vpc,
@@ -105,7 +81,73 @@ export class SenateMinecraftServer extends cdk.Stack {
         })
 
         const dataScript = readFileSync(path.join(__dirname, 'user-data.sh'), 'utf8')
-
         ec2Instance.addUserData(dataScript)
+
+        const ec2ManagementRoles = new iam.Role(this, 'ec2-management-roles', {
+            assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+            managedPolicies: [
+              iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2FullAccess'),
+              iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
+            ]
+          })
+
+        const baseEnvironments = {
+            MINECRAFT_INSTANCE_ID: ec2Instance.instanceId,
+            RCON_PASSWORD_ARN: props.rconPasswordArn,
+            RCON_PORT: '25575',
+            MC_PORT: '25565'
+        }
+
+        const rconSecret = secretsmanager.Secret.fromSecretCompleteArn(this, 'rcon-password', props.rconPasswordArn)
+        rconSecret.grantRead(ec2ManagementRoles)
+
+        const stopLambda = new NodejsFunction(this, 'stop-lambda', {
+            functionName: buildName('stop'),
+            entry: path.join(__dirname, '../../src/minecraft/stop-server.ts'),
+            role: ec2ManagementRoles,
+            environment: {
+                ...baseEnvironments
+            },
+            timeout: cdk.Duration.seconds(15),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            }
+        })
+    
+        new NodejsFunction(this, 'stop-start-lambda', {
+            functionName: buildName('start-stop'),
+            entry: path.join(__dirname, '../../src/minecraft/start-stop-server.ts'),
+            role: ec2ManagementRoles,
+            environment: {
+                ...baseEnvironments,
+                STOP_LAMBDA_NAME: stopLambda.functionName
+            },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            },
+        })
+
+        const costProtection = new NodejsFunction(this, 'cost-protection', {
+            functionName: buildName('cost-protection'),
+            entry: path.join(__dirname, '../../src/minecraft/cost-protection.ts'),
+            role: ec2ManagementRoles,
+            environment: {
+                ...baseEnvironments,
+                STOP_LAMBDA_NAME: stopLambda.functionName
+            },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            },
+        })
+
+        const costProtectionRoutine = new events.Rule(this, 'costt-protection-schedule', {
+            schedule: events.Schedule.cron({ minute: '0/20' }),
+            ruleName: buildName('cost-protection-schedule'),
+        })
+
+        costProtectionRoutine.addTarget(new targets.LambdaFunction(costProtection))
     }
 }

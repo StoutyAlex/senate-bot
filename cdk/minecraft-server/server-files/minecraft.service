@@ -8,7 +8,7 @@ User=root
 WorkingDirectory=/opt/minecraft/server
 
 # You can customize the maximum amount of memory as well as the JVM flags here
-ExecStart=/opt/jdk-17/bin/java -Xms1524M -Xms1524M -jar server.jar nogui
+ExecStart=/opt/jdk-17/bin/java -Xms3096M -Xms3096M -jar server.jar nogui
 
 # Restart the server when it is stopped or crashed after 30 seconds
 # Comment out RestartSec if you want to restart immediately

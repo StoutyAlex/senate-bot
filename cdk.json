@@ -23,6 +23,9 @@
             "env": "prod",
             "version": "0.1.0"
           }
+        },
+        "minecraft": {
+          "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
         }
       }
     }

@@ -11,4 +11,6 @@ old
 .env
 dist
 
+cdk/minecraft-server/server-bundle
+
 coverage
