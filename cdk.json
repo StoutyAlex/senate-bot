@@ -11,6 +11,8 @@
         "dev": {
           "stage": "dev",
           "botTokenArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-bot-token-dev-Z1KJXd",
+          "mcStartStopName": "senate-minecraft-start-stop",
+          "executeRconLambdaName": "senate-minecraft-execute-rcon",
           "tags": {
             "env": "dev",
             "version": "0.1.0"
@@ -19,12 +21,15 @@
         "prod": {
           "stage": "prod",
           "botTokenArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-bot-token-EJsB1f",
+          "mcStartStopName": "senate-minecraft-start-stop",
+          "executeRconLambdaName": "senate-minecraft-execute-rcon",
           "tags": {
             "env": "prod",
             "version": "0.1.0"
           }
         },
         "minecraft": {
+          "mcStatusDiscordHook": "https://discord.com/api/webhooks/932075206678290472/ShbPfyKWeNDozw9QG1jt5ARBa4hDhPvXZWIgs5kM0DptQz351tvi8R1wKFUoqoofvBuB",
           "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
         }
       }

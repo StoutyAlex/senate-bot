@@ -1,4 +1,5 @@
 import * as cdk from '@aws-cdk/core'
+import * as iam from '@aws-cdk/aws-iam'
 import * as secretManager from "@aws-cdk/aws-secretsmanager";
 import { SenateECSContainer } from './discord-bot-ecs';
 import * as dynamo from '@aws-cdk/aws-dynamodb'
@@ -7,8 +8,10 @@ import { CfnOutput, RemovalPolicy } from '@aws-cdk/core';
 export type Stage = 'dev' | 'prod'
 
 export interface SenateBotProps extends cdk.StackProps {
-    stage: Stage,
+    stage: Stage
+    mcStartStopName: string
     botTokenArn: string
+    executeRconLambdaName: string
 }
 
 export class SenateBot extends cdk.Stack {
@@ -47,10 +50,16 @@ export class SenateBot extends cdk.Stack {
             botToken: secretBotToken.secretValue.toString(),
             stage: props.stage,
             environment: {
-                MEMBER_TABLE_NAME: memberTable.tableName
+                MEMBER_TABLE_NAME: memberTable.tableName,
+                START_STOP_MC_LAMBDA_NAME: props.mcStartStopName,
+                EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName
             }
         })
         
+        discordBot.role.addManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
+        )
+
         memberTable.grantFullAccess(discordBot.role)
 
         new CfnOutput(this, 'MemberTableName', {

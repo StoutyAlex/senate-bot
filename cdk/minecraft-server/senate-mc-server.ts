@@ -5,6 +5,7 @@ import * as path from 'path'
 import * as events from '@aws-cdk/aws-events'
 import * as targets from '@aws-cdk/aws-events-targets'
 import * as secretsmanager from '@aws-cdk/aws-secretsmanager'
+import * as eventTargets from '@aws-cdk/aws-events-targets'
 import { readFileSync } from 'fs';
 import { EbsDeviceVolumeType } from '@aws-cdk/aws-ec2';
 import { SenateMCSecurityGroup } from './mc-server-security-group';
@@ -14,6 +15,7 @@ import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 export interface SenateMinecraftServerProps extends cdk.StackProps {
     rconPasswordArn: string
     rconPassword: string
+    mcStatusDiscordHook: string
 }
 
 export class SenateMinecraftServer extends cdk.Stack {
@@ -26,6 +28,8 @@ export class SenateMinecraftServer extends cdk.Stack {
             name: 'PublicSubnet',
             subnetType: ec2.SubnetType.PUBLIC
         }
+
+        const eventBus = events.EventBus.fromEventBusName(this, 'default-bus', 'default')
 
         const vpc = new ec2.Vpc(this, 'vpc', {
             maxAzs: 2,
@@ -80,6 +84,8 @@ export class SenateMinecraftServer extends cdk.Stack {
             keyName: 'minecraft-key',
         })
 
+        eventBus.grantPutEventsTo(ec2Instance)
+
         const dataScript = readFileSync(path.join(__dirname, 'user-data.sh'), 'utf8')
         ec2Instance.addUserData(dataScript)
 
@@ -87,7 +93,8 @@ export class SenateMinecraftServer extends cdk.Stack {
             assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
             managedPolicies: [
               iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2FullAccess'),
-              iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
+              iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess'),
+              iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
             ]
           })
 
@@ -114,6 +121,20 @@ export class SenateMinecraftServer extends cdk.Stack {
                 forceDockerBundling: false
             }
         })
+
+        new NodejsFunction(this, 'execute-lambda', {
+            functionName: buildName('execute-rcon'),
+            entry: path.join(__dirname, '../../src/minecraft/execute-rcon.ts'),
+            role: ec2ManagementRoles,
+            environment: {
+                ...baseEnvironments
+            },
+            timeout: cdk.Duration.seconds(10),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            }
+        })
     
         new NodejsFunction(this, 'stop-start-lambda', {
             functionName: buildName('start-stop'),
@@ -129,13 +150,48 @@ export class SenateMinecraftServer extends cdk.Stack {
             },
         })
 
+        const alertStatus = new NodejsFunction(this, 'alert-started', {
+            functionName: buildName('alert-status'),
+            entry: path.join(__dirname, '../../src/minecraft/alert-server-status.ts'),
+            role: ec2ManagementRoles,
+            environment: {
+                ...baseEnvironments,
+                MC_STATUS_DISCORD_HOOK: props.mcStatusDiscordHook
+            },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            },
+        })
+
+        new events.Rule(this, 'ec2-rules', {
+            eventPattern: {
+                source: ['aws.ec2'],
+                detailType: ['EC2 Instance State-change Notification'],
+                detail: {
+                    'instance-id': [
+                        ec2Instance.instanceId
+                    ],
+                    state: [
+                        'pending',
+                        'stopped',
+                        'running',
+                        'stopping'
+                    ]
+                }
+            },
+            targets: [new eventTargets.LambdaFunction(alertStatus)],
+            eventBus
+        })
+
         const costProtection = new NodejsFunction(this, 'cost-protection', {
             functionName: buildName('cost-protection'),
             entry: path.join(__dirname, '../../src/minecraft/cost-protection.ts'),
             role: ec2ManagementRoles,
             environment: {
                 ...baseEnvironments,
-                STOP_LAMBDA_NAME: stopLambda.functionName
+                STOP_LAMBDA_NAME: stopLambda.functionName,
+                MC_STATUS_DISCORD_HOOK: props.mcStatusDiscordHook
             },
             bundling: {
                 externalModules: ['aws-sdk'],

@@ -11,7 +11,10 @@ if (!stage || !['dev', 'prod'].includes(stage)) {
 }
 
 const appConfig = app.node.tryGetContext('stackProps')[stage]
-const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as { rconPasswordArn: string }
+const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as { 
+  rconPasswordArn: string,
+  mcStatusDiscordHook: string
+}
 
 const createStacks = async () => {
   const secretManager = new aws.SecretsManager({ region: 'eu-west-1' })
@@ -30,6 +33,7 @@ const createStacks = async () => {
   new SenateMinecraftServer(app, 'senate-minecraft', {
     rconPassword: rconPassword.SecretString!,
     rconPasswordArn: minecraftConfig.rconPasswordArn,
+    mcStatusDiscordHook: minecraftConfig.mcStatusDiscordHook,
     stackName: 'senate-minecraft'
   })
 }
