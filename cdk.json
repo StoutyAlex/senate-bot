@@ -29,7 +29,9 @@
           }
         },
         "minecraft": {
-          "mcStatusDiscordHook": "https://discord.com/api/webhooks/932075206678290472/ShbPfyKWeNDozw9QG1jt5ARBa4hDhPvXZWIgs5kM0DptQz351tvi8R1wKFUoqoofvBuB",
+          "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
+        },
+        "ftb": {
           "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
         }
       }

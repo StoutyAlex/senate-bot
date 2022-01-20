@@ -16,6 +16,11 @@ const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as {
   mcStatusDiscordHook: string
 }
 
+const ftbConfig = app.node.tryGetContext('stackProps')['ftb'] as { 
+  rconPasswordArn: string,
+  mcStatusDiscordHook: string
+}
+
 const createStacks = async () => {
   const secretManager = new aws.SecretsManager({ region: 'eu-west-1' })
   const rconPassword = await secretManager.getSecretValue({ SecretId: minecraftConfig.rconPasswordArn }).promise()
@@ -34,7 +39,16 @@ const createStacks = async () => {
     rconPassword: rconPassword.SecretString!,
     rconPasswordArn: minecraftConfig.rconPasswordArn,
     mcStatusDiscordHook: minecraftConfig.mcStatusDiscordHook,
-    stackName: 'senate-minecraft'
+    stackName: 'senate-minecraft',
+    ftb: false
+  })
+
+  new SenateMinecraftServer(app, 'senate-minecraft-ftb', {
+    rconPassword: rconPassword.SecretString!,
+    rconPasswordArn: ftbConfig.rconPasswordArn,
+    mcStatusDiscordHook: ftbConfig.mcStatusDiscordHook,
+    stackName: 'senate-minecraft-ftb',
+    ftb: true
   })
 }
 

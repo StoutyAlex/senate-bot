@@ -10,6 +10,7 @@ export interface SenateMCBundleProps {
     buildName: (name: string) => string
     rconPassword: string
     serverSecurityGroup: SenateMCSecurityGroup
+    ftb: boolean
 }
 
 export class SenateMCBundle extends cdk.Construct {
@@ -18,14 +19,17 @@ export class SenateMCBundle extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: SenateMCBundleProps) {
         super(scope, id)
 
-        const { buildName, serverSecurityGroup, rconPassword } = props
+        const { buildName, serverSecurityGroup, rconPassword, ftb } = props
 
-        const serverBundlePath = path.join(__dirname, 'server-bundle')
+        const serverFilesDir = ftb ? 'server-files-ftb' : 'server-files'
+        const serverBundleDir = ftb ? 'server-bundle-ftb' : 'server-bundle'
+
+        const serverBundlePath = path.join(__dirname, serverBundleDir)
         this.purgeBundleFolder(serverBundlePath)
 
-        this.copyFileToBundle('minecraft.service')
+        fs.copyFileSync(path.join(__dirname, serverFilesDir, 'minecraft.service'), path.join(__dirname, serverBundleDir, 'minecraft.service'))
                 
-        const properties = PropertiesReader(path.join(__dirname, 'server-files', 'server.properties'))
+        const properties = PropertiesReader(path.join(__dirname, serverFilesDir, 'server.properties'))
 
         // Set auto-generated server.properties settings
         properties.set('rcon.port', serverSecurityGroup.rconPort)
@@ -60,9 +64,5 @@ export class SenateMCBundle extends cdk.Construct {
         }
 
         fs.mkdirSync(bundlePath)
-    }
-
-    private copyFileToBundle(file: string) {
-        fs.copyFileSync(path.join(__dirname, 'server-files', file), path.join(__dirname, 'server-bundle', file))
     }
 }

@@ -36,6 +36,8 @@ export const handler = async (event: SchedulerInput) => {
             InvocationType: 'Event'
         }
 
+        await lambda.invoke(params).promise()
+
         const hook = new webhook.Webhook(webhookUrl)
 
         const message = new webhook.MessageBuilder()
@@ -45,7 +47,5 @@ export const handler = async (event: SchedulerInput) => {
             .setDescription('Checks are run ever 20 mins on the hour, this could have conflicted with a server just started. If so start again.')
 
         await hook.send(message)
-    
-        await lambda.invoke(params).promise()
     }
 }

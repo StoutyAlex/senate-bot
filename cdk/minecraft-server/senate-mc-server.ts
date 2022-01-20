@@ -16,13 +16,14 @@ export interface SenateMinecraftServerProps extends cdk.StackProps {
     rconPasswordArn: string
     rconPassword: string
     mcStatusDiscordHook: string
+    ftb: boolean
 }
 
 export class SenateMinecraftServer extends cdk.Stack {
     constructor(scope: cdk.App, id: string, props: SenateMinecraftServerProps) {
         super(scope, id, props)
 
-        const buildName = (name: string) => `senate-minecraft-${name}`
+        const buildName = (name: string) => props.ftb ? `senate-minecraft-${name}-ftb` : `senate-minecraft-${name}`
 
         const publicSubnetConfig: ec2.SubnetConfiguration = {
             name: 'PublicSubnet',
@@ -48,6 +49,7 @@ export class SenateMinecraftServer extends cdk.Stack {
             serverSecurityGroup,
             rconPassword: props.rconPassword,
             buildName,
+            ftb: props.ftb
         })
 
         const role = new iam.Role(this, 'server-role', {
@@ -86,7 +88,9 @@ export class SenateMinecraftServer extends cdk.Stack {
 
         eventBus.grantPutEventsTo(ec2Instance)
 
-        const dataScript = readFileSync(path.join(__dirname, 'user-data.sh'), 'utf8')
+        const datascriptPath = props.ftb ? 'user-data-ftb.sh' : 'user-data.sh'
+
+        const dataScript = readFileSync(path.join(__dirname, datascriptPath), 'utf8')
         ec2Instance.addUserData(dataScript)
 
         const ec2ManagementRoles = new iam.Role(this, 'ec2-management-roles', {
@@ -102,7 +106,8 @@ export class SenateMinecraftServer extends cdk.Stack {
             MINECRAFT_INSTANCE_ID: ec2Instance.instanceId,
             RCON_PASSWORD_ARN: props.rconPasswordArn,
             RCON_PORT: '25575',
-            MC_PORT: '25565'
+            MC_PORT: '25565',
+            FTB: props.ftb ? 'true' : 'false'
         }
 
         const rconSecret = secretsmanager.Secret.fromSecretCompleteArn(this, 'rcon-password', props.rconPasswordArn)
@@ -188,6 +193,7 @@ export class SenateMinecraftServer extends cdk.Stack {
             functionName: buildName('cost-protection'),
             entry: path.join(__dirname, '../../src/minecraft/cost-protection.ts'),
             role: ec2ManagementRoles,
+            timeout: cdk.Duration.seconds(10),
             environment: {
                 ...baseEnvironments,
                 STOP_LAMBDA_NAME: stopLambda.functionName,
@@ -200,7 +206,7 @@ export class SenateMinecraftServer extends cdk.Stack {
         })
 
         const costProtectionRoutine = new events.Rule(this, 'costt-protection-schedule', {
-            schedule: events.Schedule.cron({ minute: '0/20' }),
+            schedule: events.Schedule.cron({ minute: '0/30' }),
             ruleName: buildName('cost-protection-schedule'),
         })
 
