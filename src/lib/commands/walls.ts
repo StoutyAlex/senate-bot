@@ -5,10 +5,10 @@ import { invokeLambda } from "../../helpers/lambda"
 
 const startStopLambda = process.env.START_STOP_MC_LAMBDA_NAME!
 
-export class FTB extends BaseCommand {
+export class Walls extends BaseCommand {
     public meta: CommandMeta = {
-        name: 'ftb',
-        aliases: ['ftb']
+        name: 'walls',
+        aliases: ['walls']
     }
 
     public async execute(message: Message, args: string[]) {
@@ -23,7 +23,7 @@ export class FTB extends BaseCommand {
 
     private async startServer(message: Message) {
         try {
-            const ftbName = `${startStopLambda}-ftb`
+            const ftbName = `${startStopLambda}-walls`
             await invokeLambda(ftbName, { action: 'start' })
             message.channel.send('Starting server, this could take upto 5 minutes')
         } catch (error) {
@@ -32,7 +32,7 @@ export class FTB extends BaseCommand {
     }
 
     private async stopServer(message: Message) {
-        const ftbName = `${startStopLambda}-ftb`
+        const ftbName = `${startStopLambda}-walls`
         await invokeLambda(ftbName, { action: 'stop' })
         message.channel.send('Stopping server')
     }

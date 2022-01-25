@@ -1,7 +1,8 @@
 import * as cdk from '@aws-cdk/core'
 import aws from 'aws-sdk'
-import { SenateMinecraftServer, SenateMinecraftServerProps } from '../cdk/minecraft-server/senate-mc-server'
+import { SenateMinecraftServer } from '../cdk/minecraft-server/senate-mc-server'
 import { SenateBot } from '../cdk/senate-bot-stack'
+import { SenateWallsServer } from '../cdk/walls-server/senate-walls-server'
 
 const app = new cdk.App()
 const stage = app.node.tryGetContext('stage') || 'dev'
@@ -17,6 +18,11 @@ const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as {
 }
 
 const ftbConfig = app.node.tryGetContext('stackProps')['ftb'] as { 
+  rconPasswordArn: string,
+  mcStatusDiscordHook: string
+}
+
+const wallsConfig = app.node.tryGetContext('stackProps')['walls'] as { 
   rconPasswordArn: string,
   mcStatusDiscordHook: string
 }
@@ -49,6 +55,13 @@ const createStacks = async () => {
     mcStatusDiscordHook: ftbConfig.mcStatusDiscordHook,
     stackName: 'senate-minecraft-ftb',
     ftb: true
+  })
+
+  new SenateWallsServer(app, 'senate-walls', {
+    rconPassword: rconPassword.SecretString!,
+    rconPasswordArn: wallsConfig.rconPasswordArn,
+    mcStatusDiscordHook: wallsConfig.mcStatusDiscordHook,
+    stackName: 'senate-walls'
   })
 }
 
