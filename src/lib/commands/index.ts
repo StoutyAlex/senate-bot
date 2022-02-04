@@ -5,6 +5,7 @@ import { MinecraftRun } from './mc-run'
 import { Minecraft } from './minecraft'
 import { Ping } from './ping'
 import { Tribunal } from './tribunal'
+import { Valheim } from './valheim'
 import { Walls } from './walls'
 import { WallsRun } from './walls-run'
 
@@ -16,7 +17,8 @@ const MISC_COMMANDS: typeof BaseCommand[] = [
     FTBRun,
     WallsRun,
     Walls,
-    Tribunal
+    Tribunal,
+    Valheim
 ]
 
 export const COMMANDS: typeof BaseCommand[] = [

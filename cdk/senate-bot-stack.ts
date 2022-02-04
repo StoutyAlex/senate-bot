@@ -10,6 +10,7 @@ export type Stage = 'dev' | 'prod'
 export interface SenateBotProps extends cdk.StackProps {
     stage: Stage
     mcStartStopName: string
+    valheimStartStopName: string
     botTokenArn: string
     executeRconLambdaName: string
 }
@@ -52,6 +53,7 @@ export class SenateBot extends cdk.Stack {
             environment: {
                 MEMBER_TABLE_NAME: memberTable.tableName,
                 START_STOP_MC_LAMBDA_NAME: props.mcStartStopName,
+                START_STOP_VALHEIM_LAMBDA_NAME: props.valheimStartStopName,
                 EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName
             }
         })

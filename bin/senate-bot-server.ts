@@ -2,6 +2,7 @@ import * as cdk from '@aws-cdk/core'
 import aws from 'aws-sdk'
 import { SenateMinecraftServer } from '../cdk/minecraft-server/senate-mc-server'
 import { SenateBot } from '../cdk/senate-bot-stack'
+import { SenateValheimServer } from '../cdk/valheim-server/valheim-server'
 import { SenateWallsServer } from '../cdk/walls-server/senate-walls-server'
 
 const app = new cdk.App()
@@ -25,6 +26,10 @@ const ftbConfig = app.node.tryGetContext('stackProps')['ftb'] as {
 const wallsConfig = app.node.tryGetContext('stackProps')['walls'] as { 
   rconPasswordArn: string,
   mcStatusDiscordHook: string
+}
+
+const valheimConfig = app.node.tryGetContext('stackProps')['valheim'] as { 
+  valheimDiscordHook: string
 }
 
 const createStacks = async () => {
@@ -62,6 +67,15 @@ const createStacks = async () => {
     rconPasswordArn: wallsConfig.rconPasswordArn,
     mcStatusDiscordHook: wallsConfig.mcStatusDiscordHook,
     stackName: 'senate-walls'
+  })
+
+  new SenateValheimServer(app, 'senate-valheim', {
+    stackName: 'senate-valheim',
+    valheimDiscordHook: valheimConfig.valheimDiscordHook,
+    env: {
+      region: 'eu-west-1',
+      account: '477948800870'
+    }
   })
 }
 

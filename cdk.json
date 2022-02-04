@@ -12,6 +12,7 @@
           "stage": "dev",
           "botTokenArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-bot-token-dev-Z1KJXd",
           "mcStartStopName": "senate-minecraft-start-stop",
+          "valheimStartStopName": "senate-valheim-start-stop",
           "executeRconLambdaName": "senate-minecraft-execute-rcon",
           "tags": {
             "env": "dev",
@@ -22,6 +23,7 @@
           "stage": "prod",
           "botTokenArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-bot-token-EJsB1f",
           "mcStartStopName": "senate-minecraft-start-stop",
+          "valheimStartStopName": "senate-valheim-start-stop",
           "executeRconLambdaName": "senate-minecraft-execute-rcon",
           "tags": {
             "env": "prod",
@@ -39,6 +41,9 @@
         "walls": {
           "mcStatusDiscordHook": "https://discord.com/api/webhooks/935323137946566746/EmsK-V6PyeBkUecxdw10Rh74hjRrciUa1WqWS-uFiCG1D7OBcA5vaPKiE6EzpUbV-GTn",
           "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
+        },
+        "valheim": {
+          "valheimDiscordHook": "https://discord.com/api/webhooks/939172893340860416/-Tx14mnazolULbQuVHV8vCCaP6I2s9XiNmod2uafV_1-9hMgjJQWVwUmi2ryA7uSR6sf"
         }
       }
     }
