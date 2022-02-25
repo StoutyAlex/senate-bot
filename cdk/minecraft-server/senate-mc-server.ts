@@ -67,7 +67,7 @@ export class SenateMinecraftServer extends cdk.Stack {
             securityGroup: serverSecurityGroup,
             instanceType: ec2.InstanceType.of(
                 ec2.InstanceClass.T2,
-                ec2.InstanceSize.MEDIUM
+                ec2.InstanceSize.LARGE
             ),
             blockDevices: [
                 {

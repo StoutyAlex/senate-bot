@@ -1,15 +1,15 @@
-import { CommandMeta } from "../../types"
+import { CommandMeta } from "../../../types"
 import { Message, MessageEmbed } from 'discord.js'
-import { BaseCommand } from "../../structures/command"
-import { invokeLambda } from "../../helpers/lambda"
-import { ExecuteRconResponse } from "../../minecraft/execute-rcon"
+import { BaseCommand } from "../../../structures/command"
+import { invokeLambda } from "../../../helpers/lambda"
+import { ExecuteRconResponse } from "../../../minecraft/execute-rcon"
 
 const executeRconLambdaName = process.env.EXECUTE_RCON_LAMBDA_NAME!
 
-export class WallsRun extends BaseCommand {
+export class MinecraftRun extends BaseCommand {
     public meta: CommandMeta = {
-        name: 'walls-run',
-        aliases: ['wr']
+        name: 'mc-run',
+        aliases: ['mcr']
     }
 
     public async execute(message: Message, args: string[]) {
@@ -17,9 +17,7 @@ export class WallsRun extends BaseCommand {
         if (!theboys) return message.channel.send('You are not allowed to perform this action.')
         if (!args.length) return message.channel.send('you need to send a command')
 
-        const ftbName = `${executeRconLambdaName}-walls`
-
-        const response = await invokeLambda(ftbName, { command: args.join(' ') }, 'RequestResponse')
+        const response = await invokeLambda(executeRconLambdaName, { command: args.join(' ') }, 'RequestResponse')
 
         const payload = response.Payload?.toString()
         if (!payload) return message.channel.send('Unable to get valid response from invocation function')

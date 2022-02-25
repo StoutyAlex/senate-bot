@@ -1,8 +1,8 @@
-import { CommandMeta } from "../../types"
+import { CommandMeta } from "../../../types"
 import { Message, MessageEmbed } from 'discord.js'
-import { BaseCommand } from "../../structures/command"
-import { invokeLambda } from "../../helpers/lambda"
-import { ExecuteRconResponse } from "../../minecraft/execute-rcon"
+import { BaseCommand } from "../../../structures/command"
+import { invokeLambda } from "../../../helpers/lambda"
+import { ExecuteRconResponse } from "../../../minecraft/execute-rcon"
 
 const executeRconLambdaName = process.env.EXECUTE_RCON_LAMBDA_NAME!
 

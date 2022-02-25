@@ -34,6 +34,9 @@ export const handler = async (event: EC2StatusEvent) => {
             .setFooter('Reminder: the IP Changes everytime the server restarts', 'https://emoji.gg/assets/emoji/3224_info.png')
             .setDescription('Could take 2 Minutes to appear online in-game')
 
+        if (!isFtb) 
+            message.addField('World Map', `http://${ipAddress}:8123`)
+
         await hook.send(message)
     }
 

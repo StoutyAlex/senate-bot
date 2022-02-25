@@ -47,6 +47,16 @@ export class SenateMCSecurityGroup extends ec2.SecurityGroup {
             'allow RCON Minecraft access from anywhere'
         )
 
+        this.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.udp(8123),
+        )
+
+        this.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(8123),
+        )
+
         // Possibly not needed
 
         this.addIngressRule(

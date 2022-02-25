@@ -1,19 +1,19 @@
-import { CommandMeta } from "../../types"
+import { CommandMeta } from "../../../types"
 import { Message } from 'discord.js'
-import { BaseCommand } from "../../structures/command"
-import { invokeLambda } from "../../helpers/lambda"
+import { BaseCommand } from "../../../structures/command"
+import { invokeLambda } from "../../../helpers/lambda"
 
-const startStopLambda = process.env.START_STOP_VALHEIM_LAMBDA_NAME!
+const startStopLambda = process.env.START_STOP_MC_LAMBDA_NAME!
 
-export class Valheim extends BaseCommand {
+export class Walls extends BaseCommand {
     public meta: CommandMeta = {
-        name: 'valheim',
-        aliases: ['valheim']
+        name: 'walls',
+        aliases: ['walls']
     }
 
     public async execute(message: Message, args: string[]) {
         const theboys = message.member?.roles.cache.find(role => role.name === 'The Boys' || role.name === 'E-Grills')
-        const noMc = message.member?.roles.cache.find(role => role.name === 'no-valheim')
+        const noMc = message.member?.roles.cache.find(role => role.name === 'no-mc')
 
         if (!theboys || noMc) return message.channel.send('You are not allowed to perform this action.')
 
@@ -23,7 +23,8 @@ export class Valheim extends BaseCommand {
 
     private async startServer(message: Message) {
         try {
-            await invokeLambda(startStopLambda, { action: 'start' })
+            const ftbName = `${startStopLambda}-walls`
+            await invokeLambda(ftbName, { action: 'start' })
             message.channel.send('Starting server, this could take upto 5 minutes')
         } catch (error) {
             message.channel.send(`Unable to start server: ${error.message}`)
@@ -31,7 +32,8 @@ export class Valheim extends BaseCommand {
     }
 
     private async stopServer(message: Message) {
-        await invokeLambda(startStopLambda, { action: 'stop' })
+        const ftbName = `${startStopLambda}-walls`
+        await invokeLambda(ftbName, { action: 'stop' })
         message.channel.send('Stopping server')
     }
 } 

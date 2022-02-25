@@ -1,19 +1,19 @@
-import { CommandMeta } from "../../types"
+import { CommandMeta } from "../../../types"
 import { Message } from 'discord.js'
-import { BaseCommand } from "../../structures/command"
-import { invokeLambda } from "../../helpers/lambda"
+import { BaseCommand } from "../../../structures/command"
+import { invokeLambda } from "../../../helpers/lambda"
 
-const startStopLambda = process.env.START_STOP_MC_LAMBDA_NAME!
+const startStopLambda = process.env.START_STOP_VALHEIM_LAMBDA_NAME!
 
-export class Minecraft extends BaseCommand {
+export class Valheim extends BaseCommand {
     public meta: CommandMeta = {
-        name: 'minecraft',
-        aliases: ['mc']
+        name: 'valheim',
+        aliases: ['valheim']
     }
 
     public async execute(message: Message, args: string[]) {
-        const theboys = message.member?.roles.cache.find(role => role.name === 'The Boys')
-        const noMc = message.member?.roles.cache.find(role => role.name === 'no-mc')
+        const theboys = message.member?.roles.cache.find(role => role.name === 'The Boys' || role.name === 'E-Grills')
+        const noMc = message.member?.roles.cache.find(role => role.name === 'no-valheim')
 
         if (!theboys || noMc) return message.channel.send('You are not allowed to perform this action.')
 

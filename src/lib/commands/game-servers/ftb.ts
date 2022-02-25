@@ -1,7 +1,7 @@
-import { CommandMeta } from "../../types"
+import { CommandMeta } from "../../../types"
 import { Message } from 'discord.js'
-import { BaseCommand } from "../../structures/command"
-import { invokeLambda } from "../../helpers/lambda"
+import { BaseCommand } from "../../../structures/command"
+import { invokeLambda } from "../../../helpers/lambda"
 
 const startStopLambda = process.env.START_STOP_MC_LAMBDA_NAME!
 
