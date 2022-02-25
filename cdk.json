@@ -29,21 +29,6 @@
             "env": "prod",
             "version": "0.1.0"
           }
-        },
-        "minecraft": {
-          "mcStatusDiscordHook": "https://discord.com/api/webhooks/932284511612436500/a_gFsSo_Yg2x5seE8owTsxUjhR6yebs2orS5B_uDvZNpeDtKU7KsB5BQVXVjBrco7Sj8",
-          "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
-        },
-        "ftb": {
-          "mcStatusDiscordHook": "https://discord.com/api/webhooks/933715863700402246/9S4sGo1PXEXInU0Z8A_Mi7BHRILZKvRpzAsGLQJPxtnqaLTK8fAHoU1e9XoEqs6dsMzi",
-          "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
-        },
-        "walls": {
-          "mcStatusDiscordHook": "https://discord.com/api/webhooks/935323137946566746/EmsK-V6PyeBkUecxdw10Rh74hjRrciUa1WqWS-uFiCG1D7OBcA5vaPKiE6EzpUbV-GTn",
-          "rconPasswordArn": "arn:aws:secretsmanager:eu-west-1:477948800870:secret:senate-mc-rcon-password-Rxpp55"
-        },
-        "valheim": {
-          "valheimDiscordHook": "https://discord.com/api/webhooks/939172893340860416/-Tx14mnazolULbQuVHV8vCCaP6I2s9XiNmod2uafV_1-9hMgjJQWVwUmi2ryA7uSR6sf"
         }
       }
     }
