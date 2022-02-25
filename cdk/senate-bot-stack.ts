@@ -3,7 +3,7 @@ import * as iam from '@aws-cdk/aws-iam'
 import * as secretManager from "@aws-cdk/aws-secretsmanager";
 import { SenateECSContainer } from './discord-bot-ecs';
 import * as dynamo from '@aws-cdk/aws-dynamodb'
-import { CfnOutput, RemovalPolicy } from '@aws-cdk/core';
+import { CfnOutput, RemovalPolicy, Tags } from '@aws-cdk/core';
 
 export type Stage = 'dev' | 'prod'
 
@@ -13,6 +13,7 @@ export interface SenateBotProps extends cdk.StackProps {
     valheimStartStopName: string
     botTokenArn: string
     executeRconLambdaName: string
+    apiPort: number
 }
 
 export class SenateBot extends cdk.Stack {
@@ -45,6 +46,23 @@ export class SenateBot extends cdk.Stack {
             }
         })
 
+        const messageTable = new dynamo.Table(this, stackName('message-table'), {
+            tableName: constructName('message-table'),
+            partitionKey: {
+                name: 'messageId',
+                type: dynamo.AttributeType.STRING
+            },
+            removalPolicy: RemovalPolicy.RETAIN
+        })
+
+        messageTable.addGlobalSecondaryIndex({
+            indexName: 'purpose',
+            partitionKey: {
+                name: 'purpose',
+                type: dynamo.AttributeType.STRING
+            }
+        })
+
         const discordBot = new SenateECSContainer(this, stackName('ecs-construct'), {
             constructName,
             stackName,
@@ -52,9 +70,11 @@ export class SenateBot extends cdk.Stack {
             stage: props.stage,
             environment: {
                 MEMBER_TABLE_NAME: memberTable.tableName,
+                MESSAGE_TABLE_NAME: messageTable.tableName,
                 START_STOP_MC_LAMBDA_NAME: props.mcStartStopName,
                 START_STOP_VALHEIM_LAMBDA_NAME: props.valheimStartStopName,
-                EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName
+                EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName,
+                API_PORT: props.apiPort.toString()
             }
         })
         
@@ -63,6 +83,7 @@ export class SenateBot extends cdk.Stack {
         )
 
         memberTable.grantFullAccess(discordBot.role)
+        messageTable.grantReadWriteData(discordBot.role)
 
         new CfnOutput(this, 'MemberTableName', {
             value: memberTable.tableName

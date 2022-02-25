@@ -19,7 +19,7 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "useUnknownInCatchVariables": false,
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./custom-typings", "./node_modules/@types"],
     "resolveJsonModule": true,
     "outDir": "dist"
   },

@@ -1,8 +1,10 @@
-import { Client, Intents, TextChannel } from "discord.js";
-import { getGeneralChannel } from "../helpers/channel";
-import { BotConfig } from "../lib/configuration/config-helper";
-import { Events } from "../types";
-import { BaseCommand } from "./command";
+import { Client, Intents, TextChannel } from "discord.js"
+import { MESSAGE_PURPOSE } from "../constants/message-purposes"
+import { getMessageByPurpose, saveMessage } from "../database/message-table"
+import { getGeneralChannel, getTextChannelById, getTextChannelByName } from "../helpers/channel"
+import { BotConfig } from "../lib/configuration/config-helper"
+import { Events } from "../types"
+import { BaseCommand } from "./command"
 
 export interface SenateBotProps {
     config: BotConfig
@@ -37,6 +39,11 @@ export class SenateBot extends Client {
         this.commands = props.commands.map(command => new command(this));
     }
 
+    async send(message: string) {
+        const general = getGeneralChannel(this)
+        general.send(message)
+    }
+
     async start(token: string) {
         this.on('ready', async () => {
             console.log('Bot is ready')
@@ -50,6 +57,8 @@ export class SenateBot extends Client {
         })
 
         await this.login(token)
+
+        // setup the categories and channels that are defined in the constants if they aren't already
 
         return this;
     }

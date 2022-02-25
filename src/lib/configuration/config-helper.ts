@@ -26,6 +26,10 @@ export const baseConfig: { [stage in Stage]: BotConfig } = {
     }
 }
 
+export const getApiConfig = () => ({
+    port: process.env.API_PORT!
+})
+
 export const getBotConfig = (): BotConfig => {
     const stage = process.env.STAGE as Stage
     return baseConfig[stage]

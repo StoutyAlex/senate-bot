@@ -6,6 +6,7 @@ import * as ecrAssets from '@aws-cdk/aws-ecr-assets';
 import path from 'path';
 import { Stage } from './senate-bot-stack';
 import { DockerImageAsset } from '@aws-cdk/aws-ecr-assets';
+import { SecurityGroup } from '@aws-cdk/aws-ec2';
 
 export interface SenateECSContainerProps {
     stackName: (x: string) => string
@@ -52,6 +53,11 @@ export class SenateECSContainer extends cdk.Construct {
         taskDefinition.addContainer(stackName('container'), {
             image: ecs.ContainerImage.fromDockerImageAsset(this.image),
             memoryLimitMiB: 512,
+            portMappings: [{
+                containerPort: 3000,
+                hostPort: 3000
+            }],
+            containerName: 'senate-bot-instance',
             cpu: 1,
             environment: {
                 STAGE: stage,
@@ -62,14 +68,13 @@ export class SenateECSContainer extends cdk.Construct {
                 streamPrefix: 'senate-bot'
             })
         })
-
         
         const cluster = new ecs.Cluster(this, stackName('cluster'), {
             clusterName: constructName('cluster'),
             vpc
         })
 
-        cluster.addCapacity(stackName('scaling-group'), {
+        const group = cluster.addCapacity(stackName('scaling-group'), {
             instanceType: new ec2.InstanceType('t2.micro'),
             machineImageType: ecs.MachineImageType.AMAZON_LINUX_2,
             desiredCapacity: 1,
@@ -80,7 +85,28 @@ export class SenateECSContainer extends cdk.Construct {
             }
         })
 
+        const securityGroup = new SecurityGroup(this, stackName('security-group'), {
+            securityGroupName: constructName('security-group'),
+            allowAllOutbound: true,
+            vpc
+        })
+
+        securityGroup.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(22),
+            'allow SSH access from anywhere'
+        )
+
+        securityGroup.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(3000),
+            'allow HTTP for the server'
+        )
+
+        group.addSecurityGroup(securityGroup)
+
         const service = new ecs.Ec2Service(this, stackName('service'), {
+            serviceName: 'senate-bot-instance',
             cluster,
             taskDefinition,
             daemon: true

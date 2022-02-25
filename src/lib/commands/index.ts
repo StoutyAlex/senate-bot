@@ -8,6 +8,7 @@ import { Tribunal } from './tribunal'
 import { Valheim } from './game-servers/valheim'
 import { Walls } from './game-servers/walls'
 import { WallsRun } from './game-servers/walls-run'
+import { Setup } from './setup'
 
 const MISC_COMMANDS: typeof BaseCommand[] = [
     Ping,
@@ -18,7 +19,8 @@ const MISC_COMMANDS: typeof BaseCommand[] = [
     WallsRun,
     Walls,
     Tribunal,
-    Valheim
+    Valheim,
+    Setup
 ]
 
 export const COMMANDS: typeof BaseCommand[] = [
