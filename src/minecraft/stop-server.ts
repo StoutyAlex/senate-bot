@@ -1,7 +1,6 @@
 import AWS from 'aws-sdk'
 import * as util from 'minecraft-server-util'
-import { resolve } from 'path/posix'
-import { getEc2IpAddress } from './helpers/get-ec2-ip'
+import { getEc2Details } from './helpers/get-ec2-ip'
 import { getRconPassword } from './helpers/get-rcon-password'
 
 const ec2 = new AWS.EC2()
@@ -15,14 +14,14 @@ const wait = (time: number) => new Promise(resolve => {
 })
 
 export const handler = async () => {
-    const ipAddress = await getEc2IpAddress(instanceId)
+    const detail = await getEc2Details(instanceId)
     const rconPassword = await getRconPassword()
 
     client.on('message', async (message) => {
         console.log('Message', message.message)
     })
 
-    await client.connect(ipAddress, Number(rconPort))
+    await client.connect(detail.ipAddress!, Number(rconPort))
     await client.login(rconPassword)
     await client.run('say Stopping server in 10 seconds...')
     await client.run('save-all')

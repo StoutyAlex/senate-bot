@@ -4,15 +4,17 @@ import get from "lodash/get"
 
 const ec2 = new aws.EC2({ region: 'eu-west-1' })
 
-export const getEc2IpAddress = async (instanceId: string) => {
+export const getEc2Details = async (instanceId: string) => {
     const params: DescribeInstancesRequest = {
         InstanceIds: [instanceId]
     }
 
     const result = await ec2.describeInstances(params).promise()
     const ipAddress: string | null = get(result, 'Reservations[0].Instances[0].PublicIpAddress', null)
+    const tags = result.Reservations![0].Instances![0].Tags!
 
-    if (!ipAddress) throw new Error(`Unable to get IP Address of EC2: ${instanceId}`)
+    const name = tags.find(tag => tag.Key?.toLowerCase() === 'name')
+    if (!name) throw new Error(`Unable to get IP Address of EC2 ${{ ipAddress, name }}`)
 
-    return ipAddress
+    return { ipAddress, name: name.Value }
 }

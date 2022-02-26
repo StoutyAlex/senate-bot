@@ -1,9 +1,12 @@
-import { Client, Intents, TextChannel } from "discord.js"
+import { Client, Guild, Intents, TextChannel } from "discord.js"
+import { GAME_SERVERS } from "../constants/game-servers"
 import { MESSAGE_PURPOSE } from "../constants/message-purposes"
 import { getMessageByPurpose, saveMessage } from "../database/message-table"
 import { getGeneralChannel, getTextChannelById, getTextChannelByName } from "../helpers/channel"
+import { GameServerCommand } from "../lib/commands/game-server"
 import { BotConfig } from "../lib/configuration/config-helper"
 import { Events } from "../types"
+import { GameServerStatusUpdate } from "./api"
 import { BaseCommand } from "./command"
 
 export interface SenateBotProps {
@@ -12,11 +15,14 @@ export interface SenateBotProps {
     events: Events
 }
 
+const senateGuildId = process.env.SENATE_GUILD_ID!
+
 export class SenateBot extends Client { 
     public readonly config: BotConfig
     public commands: BaseCommand[]
     private readonly events: Events
     public mainChannel: TextChannel
+    public senateGuild: Guild
 
     constructor(props: SenateBotProps) {
         super({
@@ -39,15 +45,20 @@ export class SenateBot extends Client {
         this.commands = props.commands.map(command => new command(this));
     }
 
-    async send(message: string) {
-        const general = getGeneralChannel(this)
-        general.send(message)
+    async handleGameServerStatusUpdate(update: GameServerStatusUpdate) {
+        const gameServer = GAME_SERVERS.find(gs => gs.id === update.gameServerId)
+        const message = await getMessageByPurpose(gameServer!.purpose)
+
+        if (!message) return getGeneralChannel(this.senateGuild).send('Unable to handle game server update')
+
+        return GameServerCommand.updateMessage(this.senateGuild, message, update)
     }
 
     async start(token: string) {
         this.on('ready', async () => {
             console.log('Bot is ready')
-            this.mainChannel = getGeneralChannel(this)
+            // This needs to be better
+            this.mainChannel = getGeneralChannel(this.senateGuild)
         })
 
         Object.entries(this.events).forEach(([name, handler]) => {
@@ -58,7 +69,12 @@ export class SenateBot extends Client {
 
         await this.login(token)
 
-        // setup the categories and channels that are defined in the constants if they aren't already
+        const senateGuild = await this.guilds.fetch(senateGuildId)
+        if (!senateGuild) {
+            throw new Error('Unable to find senate guild')
+        }
+
+        this.senateGuild = senateGuild
 
         return this;
     }

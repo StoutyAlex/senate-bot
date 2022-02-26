@@ -1,7 +1,7 @@
 
 
 import * as util from 'minecraft-server-util'
-import { getEc2IpAddress } from './helpers/get-ec2-ip'
+import { getEc2Details } from './helpers/get-ec2-ip'
 import { getRconPassword } from './helpers/get-rcon-password'
 
 const instanceId = process.env.MINECRAFT_INSTANCE_ID!
@@ -19,10 +19,10 @@ export interface ExecuteRconResponse {
 }
 
 export const handler = async ({ command }: ExecuteRconParams) => {
-    const ipAddress = await getEc2IpAddress(instanceId)
+    const detail = await getEc2Details(instanceId)
     const rconPassword = await getRconPassword()
 
-    await client.connect(ipAddress, Number(rconPort))
+    await client.connect(detail.ipAddress!, Number(rconPort))
     await client.login(rconPassword)
 
     const response = await client.execute(command)

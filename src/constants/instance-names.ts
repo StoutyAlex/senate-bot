@@ -1,3 +1,4 @@
+import { GAME_SERVER_ID } from "./game-servers";
 
 export enum INSTANCE_NAME {
     SENATE_BOT = 'senate-bot/senate-bot_ecs-construct/senate-bot_cluster/senate-bot_scaling-group',

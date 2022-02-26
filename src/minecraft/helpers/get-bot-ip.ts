@@ -19,16 +19,7 @@ export const getDiscordBotIpAddress = async () => {
     const result = await ec2.describeInstances(params).promise()
 
     const ipAddress: string | null = get(result, 'Reservations[0].Instances[0].PublicIpAddress', null)
-    const tags = result.Reservations![0].Instances![0].Tags!
+    if (!ipAddress) throw new Error(`Unable to get IP Address of EC2`)
 
-    const name = tags.find(tag => tag.Key?.toLowerCase() === 'name')
-    if (!ipAddress || !name) throw new Error(`Unable to get IP Address of EC2 ${{ ipAddress, name }}`)
-
-    return { ipAddress, name: name.Value! }
-}
-export interface EC2StatusEvent {
-    detail: {
-        'instance-id': string
-        state: 'stopped' | 'pending' | 'running' | 'stopping'
-    }
+    return ipAddress
 }

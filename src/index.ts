@@ -4,7 +4,7 @@ import { secrets } from './lib/configuration'
 import { SenateBot } from './structures/senate-bot'
 import { COMMANDS } from './lib/commands'
 import { EVENTS } from './lib/events'
-import { Api } from './structures/api'
+import { Api, GameServerStatusUpdate } from './structures/api'
 
 const config = getBotConfig()
 const apiConfig = getApiConfig()
@@ -16,8 +16,11 @@ api.app.get('/status', (req, res) => {
     res.send('OK')
 })
 
-api.app.post('/message', (req, res) => {
-    req.client.send(req.body.message)
+api.app.post('/game-server', async (req, res) => {
+    const gameServerStatusUpdate = req.body as GameServerStatusUpdate
+
+    await req.client.handleGameServerStatusUpdate(gameServerStatusUpdate)
+
     res.status(200).send()
 })
 

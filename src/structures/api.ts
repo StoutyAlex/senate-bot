@@ -1,6 +1,15 @@
 import express, { Express } from 'express'
 import bodyParser from 'body-parser'
 import { SenateBot } from './senate-bot'
+import { GAME_SERVER_ID } from '../constants/game-servers'
+import { EC2StatusEvent } from '../minecraft/alert-server-status'
+
+export interface GameServerStatusUpdate {
+    ipAddress?: string
+    state: EC2StatusEvent['detail']['state']
+    gameServerId: GAME_SERVER_ID,
+    reason?: string,
+}
 
 export class Api {
     private client: SenateBot

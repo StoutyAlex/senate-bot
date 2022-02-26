@@ -1,7 +1,11 @@
 import webhook from 'webhook-discord'
-import { getEc2IpAddress } from './helpers/get-ec2-ip'
+import { getDiscordBotIpAddress } from './helpers/get-bot-ip'
+import { getEc2Details } from './helpers/get-ec2-ip'
+import axios from 'axios'
+import { GameServerStatusUpdate } from '../structures/api'
+import { GAME_SERVERS } from '../constants/game-servers'
 
-interface EC2StatusEvent {
+export interface EC2StatusEvent {
     detail: {
         'instance-id': string
         state: 'stopped' | 'pending' | 'running' | 'stopping'
@@ -22,20 +26,33 @@ export const handler = async (event: EC2StatusEvent) => {
     const name = isFtb ? 'Senate FTB Status' : 'Senate MC Status'
     const restartCommand = isFtb ? '`sheev ftb start`' : '`sheev minecraft start`'
 
+    const discordBotIPAddress = await getDiscordBotIpAddress()
+    const gameServerUrl = `http://${discordBotIPAddress}:3000/game-server`
+
+    const details = await getEc2Details(instanceId)
+    const serverInstance = GAME_SERVERS.find(gs => gs.instanceName === details.name)
+
+    const updateRequest: GameServerStatusUpdate = {
+        state,
+        ipAddress: details.ipAddress || undefined,
+        gameServerId: serverInstance!.id
+    }
+
+    await axios.post(gameServerUrl, updateRequest)
+
     if (state === 'running') {
-        const ipAddress = await getEc2IpAddress(instanceId)
 
         const message = new webhook.MessageBuilder()
             .setName(name)
             .setColor('#33EE33')
             .setText('Server is up and running!')
-            .setTitle(`${ipAddress}:${mcPort}`)
+            .setTitle(`${details.ipAddress}:${mcPort}`)
             .addField('Version', isFtb ? 'FTB Ultimate: Anniversary Edition. v1.2.0' : '1.18.1')
             .setFooter('Reminder: the IP Changes everytime the server restarts', 'https://emoji.gg/assets/emoji/3224_info.png')
             .setDescription('Could take 2 Minutes to appear online in-game')
 
         if (!isFtb) 
-            message.addField('World Map', `http://${ipAddress}:8123`)
+            message.addField('World Map', `http://${details.ipAddress}:8123`)
 
         await hook.send(message)
     }

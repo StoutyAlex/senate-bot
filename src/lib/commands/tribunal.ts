@@ -17,8 +17,8 @@ export class Tribunal extends BaseCommand {
         const channelToMoveFrom = get(message,'member.voice.channel.name', null) as string | undefined
         if (!channelToMoveFrom) return message.channel.send('You need to be in a voice channel!')
 
-        const evidence = getTextChannelByName(this.client, 'evidence')
-        const court = getVoiceChannelByName(this.client, 'Court Room')
+        const evidence = getTextChannelByName(message.guild!, 'evidence')
+        const court = getVoiceChannelByName(message.guild!, 'Court Room')
 
         return
     }

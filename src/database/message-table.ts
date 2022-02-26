@@ -1,14 +1,14 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
 
-const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}))
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region: 'eu-west-1' }))
 const tableName = process.env.MESSAGE_TABLE_NAME!
 
 export interface MessageRecord {
     messageId: string
     channelId: string
     purpose: string
-    senderId: string
+    guildId: string
 }
 
 export const saveMessage = async (record: MessageRecord) => {

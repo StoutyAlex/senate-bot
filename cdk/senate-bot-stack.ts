@@ -10,8 +10,11 @@ export type Stage = 'dev' | 'prod'
 export interface SenateBotProps extends cdk.StackProps {
     stage: Stage
     mcStartStopName: string
+    ftbStartStopName: string
+    wallsStartStopName: string
     valheimStartStopName: string
     botTokenArn: string
+    senateGuild: string
     executeRconLambdaName: string
     apiPort: number
 }
@@ -72,8 +75,11 @@ export class SenateBot extends cdk.Stack {
                 MEMBER_TABLE_NAME: memberTable.tableName,
                 MESSAGE_TABLE_NAME: messageTable.tableName,
                 START_STOP_MC_LAMBDA_NAME: props.mcStartStopName,
+                START_STOP_WALLS_LAMBDA_NAME: props.wallsStartStopName,
+                START_STOP_FTB_LAMBDA_NAME: props.ftbStartStopName,
                 START_STOP_VALHEIM_LAMBDA_NAME: props.valheimStartStopName,
                 EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName,
+                SENATE_GUILD_ID: props.senateGuild,
                 API_PORT: props.apiPort.toString()
             }
         })
