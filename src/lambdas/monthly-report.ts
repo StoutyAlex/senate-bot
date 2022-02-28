@@ -54,10 +54,11 @@ export const handler = async () => {
     const message = new webhook.MessageBuilder()
         .setName('Senate Billing')
         .setColor('#00AA00')
-        .setText(`<@&623626412254822423>`)
+        .setText(`Hello <@&623626412254822423>! If you're feeling generious feel free to help cover the cost`)
         .setTitle('Click here to contribute')
         .addField('Total Cost', `£${Math.ceil(priceInGBP)}`)
-        .setDescription("Game Servers are pay as we use.\nIf you're feeling generious feel free to help cover the costs")
+        .addField('Reminder', 'This is not required to play or keep the servers active, purely a donation')
+        .setFooter("Game Servers are pay as we use, the more we play the higher cost",  'https://emoji.gg/assets/emoji/3224_info.png')
         .setURL(paypalLink.Parameter.Value)
 
     await hook.send(message)

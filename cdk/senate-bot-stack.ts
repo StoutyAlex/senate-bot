@@ -46,6 +46,32 @@ export class SenateBot extends cdk.Stack {
             }
         })
 
+        const senateBilling = new NodejsFunction(this, stackName('senate-billing'), {
+            functionName: constructName('billing'),
+            entry: path.join(__dirname, '../src/lambdas/monthly-report.ts'),
+            timeout: cdk.Duration.seconds(10),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            }
+        })
+
+        senateBilling.role?.attachInlinePolicy(new iam.Policy(this, stackName('cost-and-usage'), {
+            statements: [
+                new iam.PolicyStatement({
+                    actions: ['ce:GetCostAndUsage', 'ssm:GetParameter'],
+                    resources: ['*']
+                })
+            ]
+        }))
+
+        const monthlySchedule = new events.Rule(this, 'monthly-schedule', {
+            schedule: events.Schedule.cron({ hour: '14', day: '28', minute: '0' }),
+            ruleName: constructName('monthly-schedule'),
+        })
+
+        monthlySchedule.addTarget(new targets.LambdaFunction(senateBilling))
+
         const discordBot = new SenateECSContainer(this, stackName('ecs-construct'), {
             constructName,
             stackName,
@@ -58,23 +84,6 @@ export class SenateBot extends cdk.Stack {
                 EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName
             }
         })
-
-        const senateBilling = new NodejsFunction(this, stackName('senate-billing'), {
-            functionName: constructName('billing'),
-            entry: path.join(__dirname, '../src/lambdas/monthly-payment.ts'),
-            timeout: cdk.Duration.seconds(10),
-            bundling: {
-                externalModules: ['aws-sdk'],
-                forceDockerBundling: false
-            }
-        })
-
-        const monthlySchedule = new events.Rule(this, 'monthly-schedule', {
-            schedule: events.Schedule.cron({ hour: '14', day: '28', weekDay: '?' }),
-            ruleName: constructName('monthly-schedule'),
-        })
-
-        monthlySchedule.addTarget(new targets.LambdaFunction(senateBilling))
         
         discordBot.role.addManagedPolicy(
             iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
@@ -84,6 +93,10 @@ export class SenateBot extends cdk.Stack {
 
         new CfnOutput(this, 'MemberTableName', {
             value: memberTable.tableName
+        })
+
+        new CfnOutput(this, 'BillingLambdaName', {
+            value: senateBilling.functionName
         })
     }
 }
