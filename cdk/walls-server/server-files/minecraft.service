@@ -1,0 +1,25 @@
+[Unit]
+Description=Minecraft Server
+After=syslog.target network.target
+
+[Service]
+# Ensure to set the correct user and working directory (installation directory of your server) here
+User=root
+WorkingDirectory=/opt/minecraft/server
+
+# You can customize the maximum amount of memory as well as the JVM flags here
+ExecStart=/opt/jdk-17/bin/java -Xms3096M -Xms3096M -jar server.jar nogui
+
+# Restart the server when it is stopped or crashed after 30 seconds
+# Comment out RestartSec if you want to restart immediately
+Restart=always
+RestartSec=30
+
+# Alternative: Restart the server only when it stops regularly
+# Restart=on-success
+
+# Do not remove this!
+StandardInput=null
+
+[Install]
+WantedBy=multi-user.target

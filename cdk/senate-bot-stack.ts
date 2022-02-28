@@ -1,16 +1,20 @@
 import * as cdk from '@aws-cdk/core'
 import * as iam from '@aws-cdk/aws-iam'
-import * as secretManager from "@aws-cdk/aws-secretsmanager";
+import * as events from '@aws-cdk/aws-events'
+import * as targets from '@aws-cdk/aws-events-targets'
 import { SenateECSContainer } from './discord-bot-ecs';
 import * as dynamo from '@aws-cdk/aws-dynamodb'
 import { CfnOutput, RemovalPolicy } from '@aws-cdk/core';
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
+import path from 'path';
 
-export type Stage = 'dev' | 'prod'
+export type Stage = 'prod'
 
 export interface SenateBotProps extends cdk.StackProps {
     stage: Stage
     mcStartStopName: string
-    botTokenArn: string
+    valheimStartStopName: string
+    botToken: string
     executeRconLambdaName: string
 }
 
@@ -21,8 +25,6 @@ export class SenateBot extends cdk.Stack {
         const constructName = (name: string) => `senate-bot-${name}_${props.stage}`
         const stackName = (name: string) => `senate-bot_${name}`
         
-        const secretBotToken = secretManager.Secret.fromSecretCompleteArn(this, stackName('bot-token'), props.botTokenArn)
-
         const memberTable = new dynamo.Table(this, stackName('member-table'), {
             tableName: constructName('member-table'),
             partitionKey: {
@@ -44,14 +46,41 @@ export class SenateBot extends cdk.Stack {
             }
         })
 
+        const senateBilling = new NodejsFunction(this, stackName('senate-billing'), {
+            functionName: constructName('billing'),
+            entry: path.join(__dirname, '../src/lambdas/monthly-report.ts'),
+            timeout: cdk.Duration.seconds(10),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                forceDockerBundling: false
+            }
+        })
+
+        senateBilling.role?.attachInlinePolicy(new iam.Policy(this, stackName('cost-and-usage'), {
+            statements: [
+                new iam.PolicyStatement({
+                    actions: ['ce:GetCostAndUsage', 'ssm:GetParameter'],
+                    resources: ['*']
+                })
+            ]
+        }))
+
+        const monthlySchedule = new events.Rule(this, 'monthly-schedule', {
+            schedule: events.Schedule.cron({ hour: '14', day: '28', minute: '0' }),
+            ruleName: constructName('monthly-schedule'),
+        })
+
+        monthlySchedule.addTarget(new targets.LambdaFunction(senateBilling))
+
         const discordBot = new SenateECSContainer(this, stackName('ecs-construct'), {
             constructName,
             stackName,
-            botToken: secretBotToken.secretValue.toString(),
+            botToken: props.botToken,
             stage: props.stage,
             environment: {
                 MEMBER_TABLE_NAME: memberTable.tableName,
                 START_STOP_MC_LAMBDA_NAME: props.mcStartStopName,
+                START_STOP_VALHEIM_LAMBDA_NAME: props.valheimStartStopName,
                 EXECUTE_RCON_LAMBDA_NAME: props.executeRconLambdaName
             }
         })
@@ -64,6 +93,10 @@ export class SenateBot extends cdk.Stack {
 
         new CfnOutput(this, 'MemberTableName', {
             value: memberTable.tableName
+        })
+
+        new CfnOutput(this, 'BillingLambdaName', {
+            value: senateBilling.functionName
         })
     }
 }

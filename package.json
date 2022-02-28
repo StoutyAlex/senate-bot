@@ -12,17 +12,24 @@
     "deploy": "yarn && yarn build && yarn start"
   },
   "dependencies": {
+    "@aws-sdk/client-cost-explorer": "^3.53.0",
+    "@aws-sdk/client-ssm": "^3.53.0",
     "@types/aws-sdk": "^2.7.0",
+    "@types/axios": "^0.14.0",
     "@types/jest": "^27.0.3",
     "aws-sdk": "^2.1046.0",
+    "axios": "^0.26.0",
     "cross-env": "^7.0.3",
+    "currency-converter-lt": "^1.2.4",
     "discord.js": "13.1.0",
     "dotenv": "^10.0.0",
     "env-cmd": "^10.1.0",
+    "ffmpeg-static": "^4.4.1",
     "lodash": "^4.17.21",
     "minecraft-server-util": "^5.2.8",
     "properties-reader": "^2.2.0",
-    "webhook-discord": "^3.7.8"
+    "webhook-discord": "^3.7.8",
+    "youtubei": "^0.0.1-rc.28"
   },
   "devDependencies": {
     "@aws-cdk/aws-dynamodb": "^1.139.0",
@@ -35,6 +42,7 @@
     "@aws-cdk/aws-s3-assets": "^1.139.0",
     "@aws-cdk/aws-s3-deployment": "^1.139.0",
     "@aws-cdk/aws-secretsmanager": "^1.139.0",
+    "@aws-cdk/aws-ssm": "^1.146.0",
     "@aws-cdk/core": "^1.139.0",
     "@types/faker": "^5.5.9",
     "@types/lodash": "^4.14.178",
