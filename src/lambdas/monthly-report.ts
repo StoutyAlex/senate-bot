@@ -52,9 +52,9 @@ export const handler = async () => {
     const hook = new webhook.Webhook(senateBillWebhook.Parameter.Value)
 
     const message = new webhook.MessageBuilder()
-        .setName('Senate Billing')
+        .setName('Game Server Cost Report')
         .setColor('#00AA00')
-        .setText(`Hello <@&623626412254822423>! If you're feeling generious feel free to help cover the cost`)
+        .setText(`Hello <@&623626412254822423>! If you're feeling generious feel free to help cover the cost of the game servers`)
         .setTitle('Click here to contribute')
         .addField('Total Cost', `£${Math.ceil(priceInGBP)}`)
         .addField('Reminder', 'This is not required to play or keep the servers active, purely a donation')
