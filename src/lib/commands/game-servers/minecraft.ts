@@ -12,10 +12,11 @@ export class Minecraft extends BaseCommand {
     }
 
     public async execute(message: Message, args: string[]) {
-        const theboys = message.member?.roles.cache.find(role => role.name === 'The Boys')
+        const theboys = message.member?.roles.cache.find(role => role.name.toLowerCase() === 'the boys')
+        const egirls = message.member?.roles.cache.find(role => role.name.toLowerCase() === 'e-grills')
         const noMc = message.member?.roles.cache.find(role => role.name === 'no-mc')
 
-        if (!theboys || noMc) return message.channel.send('You are not allowed to perform this action.')
+        if ((!theboys && !egirls) || noMc) return message.channel.send('You are not allowed to perform this action.')
 
         if (args[0] === 'start') return this.startServer(message)
         if (args[0] === 'stop') return this.stopServer(message)

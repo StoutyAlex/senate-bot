@@ -22,9 +22,13 @@ export const handler = async (event: SchedulerInput) => {
     }
 
     const result = await ec2.describeInstances(params).promise()
+
     const ipAddress: string | null = get(result, 'Reservations[0].Instances[0].PublicIpAddress', null)
+    const launchTime: Date | null  = get(result, 'Reservations[0].Instances[0].LaunchTime', null)
 
     if (!ipAddress) throw new Error(`Unable to get IP Address of EC2: ${instanceId}`)
+
+    const currentTime = new Date()
 
     const status = await util.status(ipAddress, Number(mcPort))
 
