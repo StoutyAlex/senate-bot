@@ -17,6 +17,7 @@ export interface SenateMinecraftServerProps extends cdk.StackProps {
     rconPassword: string
     mcStatusDiscordHook: string
     ftb: boolean
+    serverDomainName?: string
 }
 
 export class SenateMinecraftServer extends cdk.Stack {
@@ -105,6 +106,7 @@ export class SenateMinecraftServer extends cdk.Stack {
         const baseEnvironments = {
             MINECRAFT_INSTANCE_ID: ec2Instance.instanceId,
             RCON_PASSWORD_ARN: props.rconPasswordArn,
+            SERVER_DOMAIN_NAME: props.serverDomainName || '',
             RCON_PORT: '25575',
             MC_PORT: '25565',
             FTB: props.ftb ? 'true' : 'false'

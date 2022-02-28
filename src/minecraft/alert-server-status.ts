@@ -10,6 +10,7 @@ interface EC2StatusEvent {
 
 const webhookUrl = process.env.MC_STATUS_DISCORD_HOOK!
 const instanceId = process.env.MINECRAFT_INSTANCE_ID!
+const serverDomainName = process.env.SERVER_DOMAIN_NAME
 const mcPort = process.env.MC_PORT!
 const ftb = process.env.FTB!
 
@@ -25,17 +26,21 @@ export const handler = async (event: EC2StatusEvent) => {
     if (state === 'running') {
         const ipAddress = await getEc2IpAddress(instanceId)
 
+        const readableName = serverDomainName || `${ipAddress}:${mcPort}`
+
         const message = new webhook.MessageBuilder()
             .setName(name)
             .setColor('#33EE33')
             .setText('Server is up and running!')
-            .setTitle(`${ipAddress}:${mcPort}`)
+            .setTitle(readableName)
             .addField('Version', isFtb ? 'FTB Ultimate: Anniversary Edition. v1.2.0' : '1.18.1')
-            .setFooter('Reminder: the IP Changes everytime the server restarts', 'https://emoji.gg/assets/emoji/3224_info.png')
             .setDescription('Could take 2 Minutes to appear online in-game')
 
+        if (!serverDomainName) 
+            message.setFooter('Reminder: the IP Changes everytime the server restarts', 'https://emoji.gg/assets/emoji/3224_info.png')
+
         if (!isFtb) 
-            message.addField('World Map', `http://${ipAddress}:8123`)
+            message.addField('World Map', `http://${readableName}`)
 
         await hook.send(message)
     }

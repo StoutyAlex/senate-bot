@@ -12,6 +12,7 @@ const botConfig = app.node.tryGetContext('stackProps')['discordBot']
 const minecraftConfig = app.node.tryGetContext('stackProps')['minecraft'] as { 
   rconPasswordArn: string,
   mcStatusDiscordHook: string
+  serverDomainName?: string
 }
 
 const ftbConfig = app.node.tryGetContext('stackProps')['ftb'] as { 
@@ -54,6 +55,7 @@ const createStacks = async () => {
     rconPassword: rconPassword,
     rconPasswordArn: minecraftConfig.rconPasswordArn,
     mcStatusDiscordHook: minecraftConfig.mcStatusDiscordHook,
+    serverDomainName: minecraftConfig.serverDomainName,
     stackName: 'senate-minecraft',
     ftb: false
   })
